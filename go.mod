@@ -3,7 +3,7 @@ module gitee.com/zhaochuninhefei/cfssl-gm
 go 1.17
 
 require (
-	gitee.com/zhaochuninhefei/gmgo v0.0.9
+	gitee.com/zhaochuninhefei/gmgo v0.0.10
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/cloudflare/backoff v0.0.0-20161212185259-647f3cdfc87a
 	github.com/cloudflare/redoctober v0.0.0-20211013234631-6a74ccc611f6
@@ -120,4 +120,4 @@ require (
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 
-replace gitee.com/zhaochuninhefei/gmgo => /home/zhaochun/work/sources/gm-zc/gmgo
+// replace gitee.com/zhaochuninhefei/gmgo => /home/zhaochun/work/sources/gm-zc/gmgo
