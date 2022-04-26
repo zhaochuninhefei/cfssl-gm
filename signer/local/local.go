@@ -19,11 +19,6 @@ import (
 	"net/url"
 	"os"
 
-	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
-	"gitee.com/zhaochuninhefei/gmgo/sm2"
-
-	"gitee.com/zhaochuninhefei/gmgo/x509"
-
 	"gitee.com/zhaochuninhefei/cfssl-gm/certdb"
 	"gitee.com/zhaochuninhefei/cfssl-gm/config"
 	cferr "gitee.com/zhaochuninhefei/cfssl-gm/errors"
@@ -31,11 +26,13 @@ import (
 	"gitee.com/zhaochuninhefei/cfssl-gm/info"
 	"gitee.com/zhaochuninhefei/cfssl-gm/log"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer"
+	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
+	"gitee.com/zhaochuninhefei/gmgo/net/context"
+	"gitee.com/zhaochuninhefei/gmgo/sm2"
+	"gitee.com/zhaochuninhefei/gmgo/x509"
 	ct "github.com/google/certificate-transparency-go"
 	"github.com/google/certificate-transparency-go/client"
 	"github.com/google/certificate-transparency-go/jsonclient"
-
-	"gitee.com/zhaochuninhefei/gmgo/net/context"
 	zx509 "github.com/zmap/zcrypto/x509"
 	"github.com/zmap/zlint"
 	"github.com/zmap/zlint/lints"
