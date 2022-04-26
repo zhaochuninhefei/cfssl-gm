@@ -159,7 +159,6 @@ func (srv *server) post(url string, jsonData []byte) (*api.Response, error) {
 		return nil, errors.Wrap(errors.APIClientError, errors.ClientHTTPError, err)
 	}
 	defer req.Body.Close()
-	defer resp.Body.Close()
 	body, err := ioutil.ReadAll(resp.Body)
 	if err != nil {
 		return nil, errors.Wrap(errors.APIClientError, errors.IOError, err)

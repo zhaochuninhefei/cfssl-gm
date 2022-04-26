@@ -124,10 +124,10 @@ func TestNewCertGeneratorHandlerFromSigner(t *testing.T) {
 	}
 
 	h := NewCertGeneratorHandlerFromSigner(CSRValidate, s)
-	// _, ok := h.(http.Handler)
-	// if !ok {
-	// 	t.Fatal("A HTTP handler has not been returned")
-	// }
+	_, ok := h.(http.Handler)
+	if !ok {
+		t.Fatal("A HTTP handler has not been returned")
+	}
 
 	apiH, ok := h.(api.HTTPHandler)
 	if !ok {

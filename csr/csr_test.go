@@ -5,7 +5,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/elliptic"
 	"crypto/rsa"
-	"crypto/x509/pkix"
 	"encoding/asn1"
 	"encoding/pem"
 	"fmt"
@@ -81,10 +80,7 @@ func TestPKIXName(t *testing.T) {
 		KeyRequest: NewKeyRequest(),
 	}
 
-	name, err := cr.Name()
-	if err != nil {
-		t.Fatalf("Error getting name: %s", err.Error())
-	}
+	name := cr.Name()
 	if len(name.Country) != 2 {
 		t.Fatal("Expected two countries in SubjInfo.")
 	} else if len(name.Province) != 2 {
@@ -123,43 +119,11 @@ func TestParseRequest(t *testing.T) {
 		},
 		Hosts:      []string{"cloudflare.com", "www.cloudflare.com", "192.168.0.1", "jdoe@example.com", "https://www.cloudflare.com"},
 		KeyRequest: NewKeyRequest(),
-		Extensions: []pkix.Extension{
-			pkix.Extension{
-				Id:    asn1.ObjectIdentifier{1, 2, 3, 4, 5},
-				Value: []byte("AgEB"),
-			},
-		},
 	}
 
-	csrBytes, _, err := ParseRequest(cr)
+	_, _, err := ParseRequest(cr)
 	if err != nil {
 		t.Fatalf("%v", err)
-	}
-
-	block, _ := pem.Decode(csrBytes)
-	if block == nil {
-		t.Fatalf("%v", err)
-	}
-
-	if block.Type != "CERTIFICATE REQUEST" {
-		t.Fatalf("Incorrect block type: %s", block.Type)
-	}
-
-	csr, err := x509.ParseCertificateRequest(block.Bytes)
-	if err != nil {
-		t.Fatalf("%v", err)
-	}
-
-	found := false
-	for _, ext := range csr.Extensions {
-		if ext.Id.Equal(asn1.ObjectIdentifier{1, 2, 3, 4, 5}) {
-			found = true
-			break
-		}
-	}
-
-	if !found {
-		t.Fatalf("CSR did not include Custom Extension")
 	}
 }
 

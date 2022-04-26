@@ -23,9 +23,7 @@ import (
 	"time"
 
 	"gitee.com/zhaochuninhefei/gmgo/gmhttp/httptest"
-
 	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
-
 	"gitee.com/zhaochuninhefei/gmgo/x509"
 
 	"gitee.com/zhaochuninhefei/cfssl-gm/config"
@@ -34,8 +32,8 @@ import (
 	"gitee.com/zhaochuninhefei/cfssl-gm/helpers"
 	"gitee.com/zhaochuninhefei/cfssl-gm/log"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer"
-	ct "github.com/google/certificate-transparency-go"
-	"github.com/zmap/zlint/v3/lint"
+	"github.com/google/certificate-transparency-go"
+	"github.com/zmap/zlint/lints"
 )
 
 const (
@@ -1533,27 +1531,13 @@ func TestLint(t *testing.T) {
 	jankyTemplate.ExtKeyUsage = []x509.ExtKeyUsage{x509.ExtKeyUsageServerAuth, x509.ExtKeyUsageClientAuth}
 	jankyTemplate.IsCA = false
 
-	ignoredLintNameRegistry, err := lint.GlobalRegistry().Filter(lint.FilterOptions{
-		ExcludeNames: []string{"e_dnsname_not_valid_tld"},
-	})
-	if err != nil {
-		t.Fatalf("failed to construct ignoredLintNamesRegistry: %v", err)
-	}
-
-	ignoredLintSourcesRegistry, err := lint.GlobalRegistry().Filter(lint.FilterOptions{
-		ExcludeSources: lint.SourceList{lint.CABFBaselineRequirements},
-	})
-	if err != nil {
-		t.Fatalf("failed to construct ignoredLintSourcesRegistry: %v", err)
-	}
-
 	testCases := []struct {
 		name               string
 		signer             *Signer
-		lintErrLevel       lint.LintStatus
-		lintRegistry       lint.Registry
+		lintErrLevel       lints.LintStatus
+		ignoredLintMap     map[string]bool
 		expectedErr        error
-		expectedErrResults map[string]lint.LintResult
+		expectedErrResults map[string]lints.LintResult
 	}{
 		{
 			name:   "linting disabled",
@@ -1562,50 +1546,46 @@ func TestLint(t *testing.T) {
 		{
 			name:         "signer without lint key",
 			signer:       &Signer{},
-			lintErrLevel: lint.NA,
+			lintErrLevel: lints.NA,
 			expectedErr:  errors.New(`{"code":2500,"message":"Private key is unavailable"}`),
 		},
 		{
 			name:         "lint results above err level",
 			signer:       lintSigner,
-			lintErrLevel: lint.Notice,
+			lintErrLevel: lints.Notice,
 			expectedErr:  errors.New("pre-issuance linting found 2 error results"),
-			expectedErrResults: map[string]lint.LintResult{
-				"e_sub_cert_aia_does_not_contain_ocsp_url": lint.LintResult{Status: 6},
-				"e_dnsname_not_valid_tld":                  lint.LintResult{Status: 6},
+			expectedErrResults: map[string]lints.LintResult{
+				"e_sub_cert_aia_does_not_contain_ocsp_url": lints.LintResult{Status: 6},
+				"e_dnsname_not_valid_tld":                  lints.LintResult{Status: 6},
 			},
 		},
 		{
 			name:         "lint results below err level",
 			signer:       lintSigner,
-			lintErrLevel: lint.Warn,
+			lintErrLevel: lints.Warn,
 			expectedErr:  errors.New("pre-issuance linting found 2 error results"),
-			expectedErrResults: map[string]lint.LintResult{
-				"e_sub_cert_aia_does_not_contain_ocsp_url": lint.LintResult{Status: 6},
-				"e_dnsname_not_valid_tld":                  lint.LintResult{Status: 6},
+			expectedErrResults: map[string]lints.LintResult{
+				"e_sub_cert_aia_does_not_contain_ocsp_url": lints.LintResult{Status: 6},
+				"e_dnsname_not_valid_tld":                  lints.LintResult{Status: 6},
 			},
 		},
 		{
-			name:         "ignored lint names, lint results above err level",
+			name:         "ignored lints, lint results above err level",
 			signer:       lintSigner,
-			lintErrLevel: lint.Notice,
-			lintRegistry: ignoredLintNameRegistry,
-			expectedErr:  errors.New("pre-issuance linting found 1 error results"),
-			expectedErrResults: map[string]lint.LintResult{
-				"e_sub_cert_aia_does_not_contain_ocsp_url": lint.LintResult{Status: 6},
+			lintErrLevel: lints.Notice,
+			ignoredLintMap: map[string]bool{
+				"e_dnsname_not_valid_tld": true,
 			},
-		},
-		{
-			name:         "ignored lint sources, lint results above err level",
-			signer:       lintSigner,
-			lintErrLevel: lint.Notice,
-			lintRegistry: ignoredLintSourcesRegistry,
+			expectedErr: errors.New("pre-issuance linting found 1 error results"),
+			expectedErrResults: map[string]lints.LintResult{
+				"e_sub_cert_aia_does_not_contain_ocsp_url": lints.LintResult{Status: 6},
+			},
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			err := tc.signer.lint(*jankyTemplate, tc.lintErrLevel, tc.lintRegistry)
+			err := tc.signer.lint(*jankyTemplate, tc.lintErrLevel, tc.ignoredLintMap)
 			if err != nil && tc.expectedErr == nil {
 				t.Errorf("Expected no err, got %#v", err)
 			} else if err == nil && tc.expectedErr != nil {

@@ -7,7 +7,6 @@ import (
 	"crypto/ecdsa"
 	"crypto/rand"
 	"crypto/x509/pkix"
-	"database/sql"
 	"encoding/asn1"
 	"encoding/hex"
 	"encoding/pem"
@@ -19,7 +18,6 @@ import (
 	"net/mail"
 	"net/url"
 	"os"
-	"time"
 
 	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
 	"gitee.com/zhaochuninhefei/gmgo/sm2"
@@ -39,8 +37,8 @@ import (
 
 	"gitee.com/zhaochuninhefei/gmgo/net/context"
 	zx509 "github.com/zmap/zcrypto/x509"
-	"github.com/zmap/zlint/v3"
-	"github.com/zmap/zlint/v3/lint"
+	"github.com/zmap/zlint"
+	"github.com/zmap/zlint/lints"
 )
 
 // Signer contains a signer that uses the standard library to
@@ -136,7 +134,7 @@ func NewSignerFromFile(caFile, caKeyFile string, policy *config.Signing) (*Signe
 // concrete zlint LintResults so that callers can further inspect the cause of
 // the failing lints.
 type LintError struct {
-	ErrorResults map[string]lint.LintResult
+	ErrorResults map[string]lints.LintResult
 }
 
 func (e *LintError) Error() string {
@@ -145,12 +143,14 @@ func (e *LintError) Error() string {
 }
 
 // lint performs pre-issuance linting of a given TBS certificate template when
-// the provided errLevel is > 0. Note that the template is provided by-value and
-// not by-reference. This is important as the lint function needs to mutate the
-// template's signature algorithm to match the lintPriv.
-func (s *Signer) lint(template x509.Certificate, errLevel lint.LintStatus, lintRegistry lint.Registry) error {
-	// Always return nil when linting is disabled (lint.Reserved == 0).
-	if errLevel == lint.Reserved {
+// the provided errLevel is > 0. Any lint results with a status higher than the
+// errLevel that isn't created by a lint in the ignoreMap will result in
+// a LintError being returned to the caller. Note that the template is provided
+// by-value and not by-reference. This is important as the lint function needs
+// to mutate the template's signature algorithm to match the lintPriv.
+func (s *Signer) lint(template x509.Certificate, errLevel lints.LintStatus, ignoreMap map[string]bool) error {
+	// Always return nil when linting is disabled (lints.Reserved == 0).
+	if errLevel == lints.Reserved {
 		return nil
 	}
 	// without a lintPriv key to use to sign the tbsCertificate we can't lint it.
@@ -179,9 +179,12 @@ func (s *Signer) lint(template x509.Certificate, errLevel lint.LintStatus, lintR
 	if err != nil {
 		return cferr.Wrap(cferr.CertificateError, cferr.ParseFailed, err)
 	}
-	errorResults := map[string]lint.LintResult{}
-	results := zlint.LintCertificateEx(prelintCert, lintRegistry)
+	errorResults := map[string]lints.LintResult{}
+	results := zlint.LintCertificate(prelintCert)
 	for name, res := range results.Results {
+		if ignoreMap[name] {
+			continue
+		}
 		if res.Status > errLevel {
 			errorResults[name] = *res
 		}
@@ -194,7 +197,7 @@ func (s *Signer) lint(template x509.Certificate, errLevel lint.LintStatus, lintR
 	return nil
 }
 
-func (s *Signer) sign(template *x509.Certificate, lintErrLevel lint.LintStatus, lintRegistry lint.Registry) (cert []byte, err error) {
+func (s *Signer) sign(template *x509.Certificate, lintErrLevel lints.LintStatus, lintIgnore map[string]bool) (cert []byte, err error) {
 	var initRoot bool
 	if s.ca == nil {
 		if !template.IsCA {
@@ -208,7 +211,7 @@ func (s *Signer) sign(template *x509.Certificate, lintErrLevel lint.LintStatus, 
 		initRoot = true
 	}
 
-	if err := s.lint(*template, lintErrLevel, lintRegistry); err != nil {
+	if err := s.lint(*template, lintErrLevel, lintIgnore); err != nil {
 		return nil, err
 	}
 
@@ -305,7 +308,7 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 			cferr.BadRequest, errors.New("not a csr"))
 	}
 
-	csrTemplate, err := signer.ParseCertificateRequest(s, profile, block.Bytes)
+	csrTemplate, err := signer.ParseCertificateRequest(s, block.Bytes)
 	if err != nil {
 		return nil, err
 	}
@@ -456,7 +459,7 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 		var poisonExtension = pkix.Extension{Id: signer.CTPoisonOID, Critical: true, Value: []byte{0x05, 0x00}}
 		var poisonedPreCert = certTBS
 		poisonedPreCert.ExtraExtensions = append(safeTemplate.ExtraExtensions, poisonExtension)
-		cert, err = s.sign(&poisonedPreCert, profile.LintErrLevel, profile.LintRegistry)
+		cert, err = s.sign(&poisonedPreCert, profile.LintErrLevel, profile.IgnoredLintsMap)
 		if err != nil {
 			return
 		}
@@ -501,7 +504,7 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 	}
 
 	var signedCert []byte
-	signedCert, err = s.sign(&certTBS, profile.LintErrLevel, profile.LintRegistry)
+	signedCert, err = s.sign(&certTBS, profile.LintErrLevel, profile.IgnoredLintsMap)
 	if err != nil {
 		return nil, err
 	}
@@ -512,29 +515,19 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 	parsedCert, _ := helpers.ParseCertificatePEM(signedCert)
 
 	if s.dbAccessor != nil {
-		now := time.Now()
 		var certRecord = certdb.CertificateRecord{
 			Serial: certTBS.SerialNumber.String(),
 			// this relies on the specific behavior of x509.CreateCertificate
 			// which sets the AuthorityKeyId from the signer's SubjectKeyId
-			AKI:        hex.EncodeToString(parsedCert.AuthorityKeyId),
-			CALabel:    req.Label,
-			Status:     "good",
-			Expiry:     certTBS.NotAfter,
-			PEM:        string(signedCert),
-			IssuedAt:   &now,
-			NotBefore:  &certTBS.NotBefore,
-			CommonName: sql.NullString{String: certTBS.Subject.CommonName, Valid: true},
+			AKI:     hex.EncodeToString(parsedCert.AuthorityKeyId),
+			CALabel: req.Label,
+			Status:  "good",
+			Expiry:  certTBS.NotAfter,
+			PEM:     string(signedCert),
 		}
 
-		if err := certRecord.SetMetadata(req.Metadata); err != nil {
-			return nil, err
-		}
-		if err := certRecord.SetSANs(certTBS.DNSNames); err != nil {
-			return nil, err
-		}
-
-		if err := s.dbAccessor.InsertCertificate(certRecord); err != nil {
+		err = s.dbAccessor.InsertCertificate(certRecord)
+		if err != nil {
 			return nil, err
 		}
 		log.Debug("saved certificate with serial number ", certTBS.SerialNumber)

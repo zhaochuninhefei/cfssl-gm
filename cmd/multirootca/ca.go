@@ -9,17 +9,17 @@ import (
 
 	"gitee.com/zhaochuninhefei/cfssl-gm/api/info"
 	"gitee.com/zhaochuninhefei/cfssl-gm/certdb/sql"
-	_ "gitee.com/zhaochuninhefei/cfssl-gm/go-sql-driver/mysql" // import to support MySQL
 	"gitee.com/zhaochuninhefei/cfssl-gm/log"
 	"gitee.com/zhaochuninhefei/cfssl-gm/multiroot/config"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer/local"
 	"gitee.com/zhaochuninhefei/cfssl-gm/whitelist"
 	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
-	"gitee.com/zhaochuninhefei/gmgo/prometheus/promhttp"
 	"gitee.com/zhaochuninhefei/gmgo/sm2"
-	_ "github.com/lib/pq"           // import to support Postgres
-	_ "github.com/mattn/go-sqlite3" // import to support SQLite
+
+	_ "gitee.com/zhaochuninhefei/cfssl-gm/go-sql-driver/mysql" // import to support MySQL
+	_ "github.com/lib/pq"                                      // import to support Postgres
+	_ "github.com/mattn/go-sqlite3"                            // import to support SQLite
 )
 
 func parseSigner(root *config.Root) (signer.Signer, error) {
@@ -53,7 +53,6 @@ func main() {
 	flagDefaultLabel := flag.String("l", "", "specify a default label")
 	flagEndpointCert := flag.String("tls-cert", "", "server certificate")
 	flagEndpointKey := flag.String("tls-key", "", "server private key")
-	flag.IntVar(&log.Level, "loglevel", log.LevelInfo, "Log level (0 = DEBUG, 5 = FATAL)")
 	flag.Parse()
 
 	if *flagRootFile == "" {
@@ -78,6 +77,7 @@ func main() {
 	}
 
 	defaultLabel = *flagDefaultLabel
+	initStats()
 
 	infoHandler, err := info.NewMultiHandler(signers, defaultLabel)
 	if err != nil {
@@ -87,10 +87,14 @@ func main() {
 	var localhost = whitelist.NewBasic()
 	localhost.Add(net.ParseIP("127.0.0.1"))
 	localhost.Add(net.ParseIP("::1"))
+	metrics, err := whitelist.NewHandlerFunc(dumpMetrics, metricsDisallowed, localhost)
+	if err != nil {
+		log.Criticalf("failed to set up the metrics whitelist: %v", err)
+	}
 
 	http.HandleFunc("/api/v1/cfssl/authsign", dispatchRequest)
 	http.Handle("/api/v1/cfssl/info", infoHandler)
-	http.Handle("/metrics", promhttp.Handler())
+	http.Handle("/api/v1/cfssl/metrics", metrics)
 
 	if *flagEndpointCert == "" && *flagEndpointKey == "" {
 		log.Info("Now listening on ", *flagAddr)

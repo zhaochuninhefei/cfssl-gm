@@ -6,6 +6,7 @@ require (
 	gitee.com/zhaochuninhefei/gmgo v0.0.10
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/cloudflare/backoff v0.0.0-20161212185259-647f3cdfc87a
+	github.com/cloudflare/go-metrics v0.0.0-20151117154305-6a9aea36fb41
 	github.com/cloudflare/redoctober v0.0.0-20211013234631-6a74ccc611f6
 	github.com/google/certificate-transparency-go v1.1.2
 	github.com/jmhodges/clock v0.0.0-20211218015646-21de17d65b1b
@@ -14,10 +15,8 @@ require (
 	github.com/kisom/goutils v1.4.3
 	github.com/lib/pq v1.10.5
 	github.com/mattn/go-sqlite3 v1.14.12
-	github.com/prometheus/client_golang v1.12.1
-	github.com/stretchr/testify v1.7.1
 	github.com/zmap/zcrypto v0.0.0-20220402174210-599ec18ecbac
-	github.com/zmap/zlint/v3 v3.3.1
+	github.com/zmap/zlint v1.1.0
 	golang.org/x/crypto v0.0.0-20220411220226-7b82a4e95df4
 )
 
@@ -35,7 +34,6 @@ require (
 	github.com/coreos/go-systemd/v22 v22.3.2 // indirect
 	github.com/cpuguy83/go-md2man/v2 v2.0.0 // indirect
 	github.com/daaku/go.zipexe v1.0.0 // indirect
-	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/envoyproxy/go-control-plane v0.9.10-0.20210907150352-cf90f659a021 // indirect
 	github.com/envoyproxy/protoc-gen-validate v0.3.0-java // indirect
@@ -62,7 +60,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
-	github.com/pmezard/go-difflib v1.0.0 // indirect
+	github.com/prometheus/client_golang v1.12.1 // indirect
 	github.com/prometheus/client_model v0.2.0 // indirect
 	github.com/prometheus/common v0.34.0 // indirect
 	github.com/prometheus/procfs v0.7.3 // indirect
@@ -72,6 +70,7 @@ require (
 	github.com/soheilhy/cmux v0.1.5 // indirect
 	github.com/spf13/cobra v1.1.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/stretchr/testify v1.7.1 // indirect
 	github.com/tmc/grpc-websocket-proxy v0.0.0-20201229170055-e5319fda7802 // indirect
 	github.com/urfave/cli v1.22.4 // indirect
 	github.com/weppos/publicsuffix-go v0.15.1-0.20220329081811-9a40b608a236 // indirect
@@ -116,7 +115,6 @@ require (
 	gopkg.in/cheggaaa/pb.v1 v1.0.28 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
-	gopkg.in/yaml.v3 v3.0.0-20210107192922-496545a6307b // indirect
 	sigs.k8s.io/yaml v1.2.0 // indirect
 )
 

@@ -16,9 +16,7 @@ import (
 )
 
 const (
-	// from https://github.com/cloudflare/cfssl_trust/blob/master/ca-bundle.crt
-	testCaBundle = "testdata/ca-bundle.pem"
-	// from https://github.com/cloudflare/cfssl_trust/blob/master/int-bundle.crt
+	testCaBundle        = "testdata/ca-bundle.pem"
 	testIntCaBundle     = "testdata/int-bundle.pem"
 	testNSSRootBundle   = "testdata/nss.pem"
 	testMetadata        = "testdata/ca-bundle.crt.metadata"

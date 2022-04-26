@@ -13,7 +13,7 @@ import (
 )
 
 // Compute the priority of different hash algorithm based on security
-// SM3 = SHA2 > SHA1 >> MD = Others = Unknown
+// SM3 > SHA2 > SHA1 >> MD = Others = Unknown
 func hashPriority(cert *x509.Certificate) int {
 	switch cert.SignatureAlgorithm {
 	case x509.SM2WithSM3:
@@ -30,7 +30,7 @@ func hashPriority(cert *x509.Certificate) int {
 }
 
 // Compute the priority of different key algorithm based performance and security
-// SM2=ECDSA>RSA>DSA>Unknown
+// SM2>ECDSA>RSA>DSA>Unknown
 func keyAlgoPriority(cert *x509.Certificate) int {
 	switch cert.PublicKeyAlgorithm {
 	case x509.SM2:

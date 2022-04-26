@@ -122,16 +122,13 @@ var fileTests = []fileTest{
 		errorCallback:  nil,
 		bundleChecking: ExpectBundleLength(3),
 	},
-	/*
-		TODO: Re-enable once leafRSA3072 is regenerated with new expiry.
-		{
-			cert:           leafRSA3072,
-			caBundleFile:   testCFSSLRootBundle,
-			intBundleFile:  testCFSSLIntBundle,
-			errorCallback:  nil,
-			bundleChecking: ExpectBundleLength(3),
-		},
-	*/
+	{
+		cert:           leafRSA3072,
+		caBundleFile:   testCFSSLRootBundle,
+		intBundleFile:  testCFSSLIntBundle,
+		errorCallback:  nil,
+		bundleChecking: ExpectBundleLength(3),
+	},
 	{
 		cert:           leafRSA4096,
 		caBundleFile:   testCFSSLRootBundle,
@@ -173,17 +170,14 @@ var fileTests = []fileTest{
 		errorCallback:  nil,
 		bundleChecking: ExpectBundleLength(3),
 	},
-	/*
-			TODO: Re-enable once leafRSA3072 is regenerated with new expiry.
-		{
-			cert:           leafRSA3072,
-			key:            leafKeyRSA3072,
-			caBundleFile:   testCFSSLRootBundle,
-			intBundleFile:  testCFSSLIntBundle,
-			errorCallback:  nil,
-			bundleChecking: ExpectBundleLength(3),
-		},
-	*/
+	{
+		cert:           leafRSA3072,
+		key:            leafKeyRSA3072,
+		caBundleFile:   testCFSSLRootBundle,
+		intBundleFile:  testCFSSLIntBundle,
+		errorCallback:  nil,
+		bundleChecking: ExpectBundleLength(3),
+	},
 	{
 		cert:           leafRSA4096,
 		key:            leafKeyRSA4096,
@@ -349,7 +343,7 @@ func TestBundleFromFile(t *testing.T) {
 			test.errorCallback(t, err)
 		} else {
 			if err != nil {
-				t.Fatalf("expected no error bundling %q. but an error occurred: %v", test.cert, err)
+				t.Fatalf("expected no error. but an error occurred: %v", err)
 			}
 			if test.bundleChecking != nil {
 				test.bundleChecking(t, bundle)

@@ -1,7 +1,7 @@
 cfssl-gm
 ==================
 
-基于`github.com/cloudflare/cfssl`的`v1.6.1`版本进行了国密改造。
+基于`github.com/cloudflare/cfssl`的`v1.4.1`版本进行了国密改造。
 
 
 # 版权声明

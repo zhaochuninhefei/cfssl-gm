@@ -17,7 +17,6 @@ import (
 
 	"gitee.com/zhaochuninhefei/cfssl-gm/api"
 	"gitee.com/zhaochuninhefei/cfssl-gm/api/bundle"
-	"gitee.com/zhaochuninhefei/cfssl-gm/api/certadd"
 	"gitee.com/zhaochuninhefei/cfssl-gm/api/certinfo"
 	"gitee.com/zhaochuninhefei/cfssl-gm/api/crl"
 	"gitee.com/zhaochuninhefei/cfssl-gm/api/gencrl"
@@ -111,9 +110,8 @@ func (hb *httpBox) Open(name string) (http.File, error) {
 // staticBox is the box containing all static assets.
 var staticBox = &httpBox{
 	redirects: map[string]string{
-		"/scan":     "/index.html",
-		"/bundle":   "/index.html",
-		"/packages": "/index.html",
+		"/scan":   "/index.html",
+		"/bundle": "/index.html",
 	},
 }
 
@@ -253,10 +251,6 @@ var endpoints = map[string]func() (http.Handler, error){
 
 	"health": func() (http.Handler, error) {
 		return health.NewHealthCheck(), nil
-	},
-
-	"certadd": func() (http.Handler, error) {
-		return certadd.NewHandler(certsql.NewAccessor(db), nil), nil
 	},
 }
 

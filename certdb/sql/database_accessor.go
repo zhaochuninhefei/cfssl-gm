@@ -19,10 +19,8 @@ func init() {
 
 const (
 	insertSQL = `
-INSERT INTO certificates (serial_number, authority_key_identifier, ca_label, status, reason, expiry, revoked_at, pem,
-	issued_at, not_before, metadata, sans, common_name)
-VALUES (:serial_number, :authority_key_identifier, :ca_label, :status, :reason, :expiry, :revoked_at, :pem,
-	:issued_at, :not_before, :metadata, :sans, :common_name);`
+INSERT INTO certificates (serial_number, authority_key_identifier, ca_label, status, reason, expiry, revoked_at, pem)
+	VALUES (:serial_number, :authority_key_identifier, :ca_label, :status, :reason, :expiry, :revoked_at, :pem);`
 
 	selectSQL = `
 SELECT %s FROM certificates
@@ -34,10 +32,6 @@ SELECT %s FROM certificates
 
 	selectAllRevokedAndUnexpiredWithLabelSQL = `
 SELECT %s FROM certificates
-	WHERE CURRENT_TIMESTAMP < expiry AND status='revoked' AND ca_label= ?;`
-
-	selectRevokedAndUnexpiredWithLabelSQL = `
-SELECT serial_number, revoked_at FROM certificates
 	WHERE CURRENT_TIMESTAMP < expiry AND status='revoked' AND ca_label= ?;`
 
 	selectAllRevokedAndUnexpiredSQL = `
@@ -105,29 +99,15 @@ func (d *Accessor) InsertCertificate(cr certdb.CertificateRecord) error {
 		return err
 	}
 
-	var issuedAt, notBefore *time.Time
-	if cr.IssuedAt != nil {
-		t := cr.IssuedAt.UTC()
-		issuedAt = &t
-	}
-	if cr.NotBefore != nil {
-		t := cr.NotBefore.UTC()
-		notBefore = &t
-	}
 	res, err := d.db.NamedExec(insertSQL, &certdb.CertificateRecord{
-		Serial:       cr.Serial,
-		AKI:          cr.AKI,
-		CALabel:      cr.CALabel,
-		Status:       cr.Status,
-		Reason:       cr.Reason,
-		Expiry:       cr.Expiry.UTC(),
-		RevokedAt:    cr.RevokedAt.UTC(),
-		PEM:          cr.PEM,
-		IssuedAt:     issuedAt,
-		NotBefore:    notBefore,
-		MetadataJSON: cr.MetadataJSON,
-		SANsJSON:     cr.SANsJSON,
-		CommonName:   cr.CommonName,
+		Serial:    cr.Serial,
+		AKI:       cr.AKI,
+		CALabel:   cr.CALabel,
+		Status:    cr.Status,
+		Reason:    cr.Reason,
+		Expiry:    cr.Expiry.UTC(),
+		RevokedAt: cr.RevokedAt.UTC(),
+		PEM:       cr.PEM,
 	})
 	if err != nil {
 		return wrapSQLError(err)
@@ -199,21 +179,6 @@ func (d *Accessor) GetRevokedAndUnexpiredCertificatesByLabel(label string) (crs 
 	}
 
 	err = d.db.Select(&crs, fmt.Sprintf(d.db.Rebind(selectAllRevokedAndUnexpiredWithLabelSQL), sqlstruct.Columns(certdb.CertificateRecord{})), label)
-	if err != nil {
-		return nil, wrapSQLError(err)
-	}
-
-	return crs, nil
-}
-
-// GetRevokedAndUnexpiredCertificatesSelectColumnsByLabel gets serial_number and revoed_at from all revoked and unexpired certificate from db (for CRLs) with specified ca_label.
-func (d *Accessor) GetRevokedAndUnexpiredCertificatesByLabelSelectColumns(label string) (crs []certdb.CertificateRecord, err error) {
-	err = d.checkDB()
-	if err != nil {
-		return nil, err
-	}
-
-	err = d.db.Select(&crs, d.db.Rebind(selectRevokedAndUnexpiredWithLabelSQL), label)
 	if err != nil {
 		return nil, wrapSQLError(err)
 	}

@@ -13,10 +13,7 @@
             "L": "San Francisco",
             "O": "CloudFlare",
             "OU": "Systems Engineering",
-            "ST": "California",
-            "OID": {
-                "1.2.3.4.5": "abc"
-            }
+            "ST": "California"
         }
     ]
 }

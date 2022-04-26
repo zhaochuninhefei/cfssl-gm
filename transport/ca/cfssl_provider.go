@@ -207,15 +207,11 @@ func (cap *CFSSL) SignCSR(csrPEM []byte) (cert []byte, err error) {
 		return nil, err
 	}
 
-	hosts := make([]string, len(csr.DNSNames), len(csr.DNSNames)+len(csr.IPAddresses)+len(csr.URIs))
+	hosts := make([]string, len(csr.DNSNames), len(csr.DNSNames)+len(csr.IPAddresses))
 	copy(hosts, csr.DNSNames)
 
 	for i := range csr.IPAddresses {
 		hosts = append(hosts, csr.IPAddresses[i].String())
-	}
-
-	for i := range csr.URIs {
-		hosts = append(hosts, csr.URIs[i].String())
 	}
 
 	sreq := &signer.SignRequest{

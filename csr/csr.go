@@ -11,11 +11,9 @@ import (
 	"encoding/asn1"
 	"encoding/pem"
 	"errors"
-	"fmt"
 	"net"
 	"net/mail"
 	"net/url"
-	"strconv"
 	"strings"
 
 	cferr "gitee.com/zhaochuninhefei/cfssl-gm/errors"
@@ -33,14 +31,12 @@ const (
 
 // A Name contains the SubjectInfo fields.
 type Name struct {
-	C            string            `json:"C,omitempty" yaml:"C,omitempty"`   // Country
-	ST           string            `json:"ST,omitempty" yaml:"ST,omitempty"` // State
-	L            string            `json:"L,omitempty" yaml:"L,omitempty"`   // Locality
-	O            string            `json:"O,omitempty" yaml:"O,omitempty"`   // OrganisationName
-	OU           string            `json:"OU,omitempty" yaml:"OU,omitempty"` // OrganisationalUnitName
-	E            string            `json:"E,omitempty" yaml:"E,omitempty"`
-	SerialNumber string            `json:"SerialNumber,omitempty" yaml:"SerialNumber,omitempty"`
-	OID          map[string]string `json:"OID,omitempty", yaml:"OID,omitempty"`
+	C            string `json:"C,omitempty" yaml:"C,omitempty"`   // Country
+	ST           string `json:"ST,omitempty" yaml:"ST,omitempty"` // State
+	L            string `json:"L,omitempty" yaml:"L,omitempty"`   // Locality
+	O            string `json:"O,omitempty" yaml:"O,omitempty"`   // OrganisationName
+	OU           string `json:"OU,omitempty" yaml:"OU,omitempty"` // OrganisationalUnitName
+	SerialNumber string `json:"SerialNumber,omitempty" yaml:"SerialNumber,omitempty"`
 }
 
 // A KeyRequest contains the algorithm and key size for a new private key.
@@ -141,14 +137,12 @@ type CAConfig struct {
 // A CertificateRequest encapsulates the API interface to the
 // certificate request functionality.
 type CertificateRequest struct {
-	CN           string           `json:"CN" yaml:"CN"`
-	Names        []Name           `json:"names" yaml:"names"`
-	Hosts        []string         `json:"hosts" yaml:"hosts"`
-	KeyRequest   *KeyRequest      `json:"key,omitempty" yaml:"key,omitempty"`
-	CA           *CAConfig        `json:"ca,omitempty" yaml:"ca,omitempty"`
-	SerialNumber string           `json:"serialnumber,omitempty" yaml:"serialnumber,omitempty"`
-	Extensions   []pkix.Extension `json:"extensions,omitempty" yaml:"extensions,omitempty"`
-	CRL          string           `json:"crl_url,omitempty" yaml:"crl_url,omitempty"`
+	CN           string      `json:"CN" yaml:"CN"`
+	Names        []Name      `json:"names" yaml:"names"`
+	Hosts        []string    `json:"hosts" yaml:"hosts"`
+	KeyRequest   *KeyRequest `json:"key,omitempty" yaml:"key,omitempty"`
+	CA           *CAConfig   `json:"ca,omitempty" yaml:"ca,omitempty"`
+	SerialNumber string      `json:"serialnumber,omitempty" yaml:"serialnumber,omitempty"`
 }
 
 // New returns a new, empty CertificateRequest with a
@@ -166,25 +160,8 @@ func appendIf(s string, a *[]string) {
 	}
 }
 
-// OIDFromString creates an ASN1 ObjectIdentifier from its string representation
-func OIDFromString(s string) (asn1.ObjectIdentifier, error) {
-	var oid []int
-	parts := strings.Split(s, ".")
-	if len(parts) < 1 {
-		return oid, fmt.Errorf("invalid OID string: %s", s)
-	}
-	for _, p := range parts {
-		i, err := strconv.Atoi(p)
-		if err != nil {
-			return nil, fmt.Errorf("invalid OID part %s", p)
-		}
-		oid = append(oid, i)
-	}
-	return oid, nil
-}
-
 // Name returns the PKIX name for the request.
-func (cr *CertificateRequest) Name() (pkix.Name, error) {
+func (cr *CertificateRequest) Name() pkix.Name {
 	var name pkix.Name
 	name.CommonName = cr.CN
 
@@ -194,19 +171,9 @@ func (cr *CertificateRequest) Name() (pkix.Name, error) {
 		appendIf(n.L, &name.Locality)
 		appendIf(n.O, &name.Organization)
 		appendIf(n.OU, &name.OrganizationalUnit)
-		for k, v := range n.OID {
-			oid, err := OIDFromString(k)
-			if err != nil {
-				return name, err
-			}
-			name.ExtraNames = append(name.ExtraNames, pkix.AttributeTypeAndValue{Type: oid, Value: v})
-		}
-		if n.E != "" {
-			name.ExtraNames = append(name.ExtraNames, pkix.AttributeTypeAndValue{Type: asn1.ObjectIdentifier{1, 2, 840, 113549, 1, 9, 1}, Value: n.E})
-		}
 	}
 	name.SerialNumber = cr.SerialNumber
-	return name, nil
+	return name
 }
 
 // BasicConstraints CSR information RFC 5280, 4.2.1.9
@@ -403,13 +370,8 @@ func Generate(priv crypto.Signer, req *CertificateRequest) (csr []byte, err erro
 		return nil, cferr.New(cferr.PrivateKeyError, cferr.Unavailable)
 	}
 
-	subj, err := req.Name()
-	if err != nil {
-		return nil, err
-	}
-
 	var tpl = x509.CertificateRequest{
-		Subject:            subj,
+		Subject:            req.Name(),
 		SignatureAlgorithm: sigAlgo,
 	}
 
@@ -425,18 +387,8 @@ func Generate(priv crypto.Signer, req *CertificateRequest) (csr []byte, err erro
 		}
 	}
 
-	tpl.ExtraExtensions = []pkix.Extension{}
-
 	if req.CA != nil {
 		err = appendCAInfoToCSR(req.CA, &tpl)
-		if err != nil {
-			err = cferr.Wrap(cferr.CSRError, cferr.GenerationFailed, err)
-			return
-		}
-	}
-
-	if req.Extensions != nil {
-		err = appendExtensionsToCSR(req.Extensions, &tpl)
 		if err != nil {
 			err = cferr.Wrap(cferr.CSRError, cferr.GenerationFailed, err)
 			return
@@ -471,19 +423,13 @@ func appendCAInfoToCSR(reqConf *CAConfig, csr *x509.CertificateRequest) error {
 		return err
 	}
 
-	csr.ExtraExtensions = append(csr.ExtraExtensions, pkix.Extension{
-		Id:       asn1.ObjectIdentifier{2, 5, 29, 19},
-		Value:    val,
-		Critical: true,
-	})
-
-	return nil
-}
-
-// appendCAInfoToCSR appends user-defined extension to a CSR
-func appendExtensionsToCSR(extensions []pkix.Extension, csr *x509.CertificateRequest) error {
-	for _, extension := range extensions {
-		csr.ExtraExtensions = append(csr.ExtraExtensions, extension)
+	csr.ExtraExtensions = []pkix.Extension{
+		{
+			Id:       asn1.ObjectIdentifier{2, 5, 29, 19},
+			Value:    val,
+			Critical: true,
+		},
 	}
+
 	return nil
 }
