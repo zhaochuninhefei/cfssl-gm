@@ -23,7 +23,7 @@ require (
 require (
 	bitbucket.org/creachadair/shell v0.0.6 // indirect
 	cloud.google.com/go v0.93.3 // indirect
-	gitee.com/zhaochuninhefei/zcgolog v0.0.7 // indirect
+	gitee.com/zhaochuninhefei/zcgolog v0.0.9 // indirect
 	github.com/benbjohnson/clock v1.1.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/bgentry/speakeasy v0.1.0 // indirect
