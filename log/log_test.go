@@ -2,37 +2,38 @@ package log
 
 import (
 	"bytes"
-	"log"
 	"strings"
 	"testing"
+
+	log "gitee.com/zhaochuninhefei/zcgolog/zclog"
 )
 
 const teststring = "asdf123"
 
 func TestOutputf(t *testing.T) {
+	// log.Info("TestOutputf")
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	Level = LevelDebug
+	log.Level = LevelDebug
 	outputf(LevelDebug, teststring, nil)
 
 	// outputf correctly prints string
 	if !strings.Contains(buf.String(), teststring) {
 		t.Fail()
 	}
-	return
+	// return
 }
 
 func TestOutput(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	Level = LevelDebug
+	log.Level = LevelDebug
 	output(LevelDebug, nil)
 
 	// outputf correctly prints string with proper Debug prefix
 	if !strings.Contains(buf.String(), levelPrefix[LevelDebug]) {
 		t.Fail()
 	}
-	return
 }
 
 func TestCriticalf(t *testing.T) {
@@ -45,7 +46,6 @@ func TestCriticalf(t *testing.T) {
 	if !strings.Contains(buf.String(), teststring) {
 		t.Fail()
 	}
-	return
 }
 
 func TestCritical(t *testing.T) {
@@ -57,7 +57,6 @@ func TestCritical(t *testing.T) {
 	if !strings.Contains(buf.String(), levelPrefix[LevelCritical]) {
 		t.Fail()
 	}
-	return
 }
 
 func TestWarningf(t *testing.T) {
@@ -70,7 +69,6 @@ func TestWarningf(t *testing.T) {
 	if !strings.Contains(buf.String(), teststring) {
 		t.Fail()
 	}
-	return
 }
 
 func TestWarning(t *testing.T) {
@@ -82,7 +80,6 @@ func TestWarning(t *testing.T) {
 	if !strings.Contains(buf.String(), levelPrefix[LevelWarning]) {
 		t.Fail()
 	}
-	return
 }
 
 func TestInfof(t *testing.T) {
@@ -95,7 +92,6 @@ func TestInfof(t *testing.T) {
 	if !strings.Contains(buf.String(), teststring) {
 		t.Fail()
 	}
-	return
 }
 
 func TestInfo(t *testing.T) {
@@ -107,13 +103,12 @@ func TestInfo(t *testing.T) {
 	if !strings.Contains(buf.String(), levelPrefix[LevelInfo]) {
 		t.Fail()
 	}
-	return
 }
 
 func TestDebugf(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	Level = LevelDebug
+	log.Level = LevelDebug
 	Debugf(teststring, nil)
 
 	// outputf correctly prints string
@@ -121,20 +116,18 @@ func TestDebugf(t *testing.T) {
 	if !strings.Contains(buf.String(), teststring) {
 		t.Fail()
 	}
-	return
 }
 
 func TestDebug(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.SetOutput(buf)
-	Level = LevelDebug
+	log.Level = LevelDebug
 	Debug(nil)
 
 	// outputf correctly prints string
 	if !strings.Contains(buf.String(), levelPrefix[LevelDebug]) {
 		t.Fail()
 	}
-	return
 }
 
 type testSyslogger struct {
@@ -174,7 +167,7 @@ func (l testSyslogger) Emerg(s string) {
 func TestSetLogger(t *testing.T) {
 	buf := new(bytes.Buffer)
 	SetLogger(testSyslogger{buf})
-	Level = LevelDebug
+	log.Level = LevelDebug
 	outputf(LevelDebug, teststring, nil)
 
 	// outputf correctly prints string
@@ -182,5 +175,4 @@ func TestSetLogger(t *testing.T) {
 		t.Fail()
 	}
 	SetLogger(nil)
-	return
 }

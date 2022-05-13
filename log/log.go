@@ -7,8 +7,9 @@ package log
 
 import (
 	"fmt"
-	"log"
 	"os"
+
+	log "gitee.com/zhaochuninhefei/zcgolog/zclog"
 )
 
 // The following constants represent logging levels in increasing levels of seriousness.
@@ -36,8 +37,8 @@ var levelPrefix = [...]string{
 	LevelFatal:    "FATAL",
 }
 
-// Level stores the current logging level.
-var Level = LevelInfo
+// // Level stores the current logging level.
+// var Level = LevelInfo
 
 // SyslogWriter specifies the necessary methods for an alternate output
 // destination passed in via SetLogger.
@@ -63,7 +64,7 @@ func SetLogger(logger SyslogWriter) {
 }
 
 func print(l int, msg string) {
-	if l >= Level {
+	if l >= log.Level {
 		if syslogWriter != nil {
 			switch l {
 			case LevelDebug:
