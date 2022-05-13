@@ -39,6 +39,9 @@ var levelPrefix = [...]string{
 
 // // Level stores the current logging level.
 // var Level = LevelInfo
+func Level() *int {
+	return &log.Level
+}
 
 // SyslogWriter specifies the necessary methods for an alternate output
 // destination passed in via SetLogger.
