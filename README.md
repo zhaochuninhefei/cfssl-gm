@@ -8,3 +8,8 @@ cfssl-gm
 本项目采取木兰宽松许可证, 第2版，具体参见`LICENSE`文件。
 
 本项目基于`github.com/cloudflare/cfssl`进行了二次开发，对应版权声明文件:`thrid_licenses/github.com/cloudflare/LICENSE`。
+
+# JetBrains support
+Thanks to JetBrains for supporting open source projects.
+
+<a href="https://jb.gg/OpenSourceSupport" target="_blank">https://jb.gg/OpenSourceSupport.</a>
