@@ -13,6 +13,7 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"gitee.com/zhaochuninhefei/gmgo/ecdsa_ext"
 	"io/ioutil"
 	"os"
 
@@ -204,7 +205,7 @@ func StringTLSVersion(version string) uint16 {
 func EncodeCertificatesPEM(certs []*x509.Certificate) []byte {
 	var buffer bytes.Buffer
 	for _, cert := range certs {
-		pem.Encode(&buffer, &pem.Block{
+		_ = pem.Encode(&buffer, &pem.Block{
 			Type:  "CERTIFICATE",
 			Bytes: cert.Raw,
 		})
@@ -449,8 +450,8 @@ func ParseCSRPEM(csrPEM []byte) (*x509.CertificateRequest, error) {
 }
 
 // SignerAlgo returns an X.509 signature algorithm from a crypto.Signer.
-func SignerAlgo(priv crypto.Signer) x509.SignatureAlgorithm {
-	switch pub := priv.Public().(type) {
+func SignerAlgo(privKey crypto.Signer) x509.SignatureAlgorithm {
+	switch pub := privKey.Public().(type) {
 	case *sm2.PublicKey:
 		return x509.SM2WithSM3
 	case *rsa.PublicKey:
@@ -474,7 +475,18 @@ func SignerAlgo(priv crypto.Signer) x509.SignatureAlgorithm {
 		case elliptic.P256():
 			return x509.ECDSAWithSHA256
 		default:
-			return x509.ECDSAWithSHA1
+			return x509.ECDSAWithSHA256
+		}
+	case *ecdsa_ext.PublicKey:
+		switch pub.Curve {
+		case elliptic.P521():
+			return x509.ECDSAEXTWithSHA512
+		case elliptic.P384():
+			return x509.ECDSAEXTWithSHA384
+		case elliptic.P256():
+			return x509.ECDSAEXTWithSHA256
+		default:
+			return x509.ECDSAEXTWithSHA256
 		}
 	default:
 		return x509.UnknownSignatureAlgorithm
