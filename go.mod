@@ -37,6 +37,7 @@ require (
 
 replace (
 	gitee.com/zhaochuninhefei/gmgo => ../gmgo
+	gitee.com/zhaochuninhefei/zcgolog => ../zcgolog
 	// zlint与zcrypto版本必须匹配，否则zlint编译出错
 	github.com/zmap/zcrypto => github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
 	github.com/zmap/zlint => github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb

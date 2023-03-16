@@ -9,6 +9,8 @@ import (
 	"crypto/x509/pkix"
 	"encoding/asn1"
 	"errors"
+	"gitee.com/zhaochuninhefei/gmgo/ecdsa_ext"
+	"gitee.com/zhaochuninhefei/zcgolog/zclog"
 	"math/big"
 	"strings"
 	"time"
@@ -141,36 +143,50 @@ func Profile(s Signer, profile string) (*config.SigningProfile, error) {
 // DefaultSigAlgo returns an appropriate X.509 signature algorithm given
 // the CA's private key.
 func DefaultSigAlgo(priv crypto.Signer) x509.SignatureAlgorithm {
+	var sigAlg x509.SignatureAlgorithm
 	pub := priv.Public()
 	switch pub := pub.(type) {
 	case *sm2.PublicKey:
-		return x509.SM2WithSM3
+		sigAlg = x509.SM2WithSM3
 	case *rsa.PublicKey:
 		keySize := pub.N.BitLen()
 		switch {
 		case keySize >= 4096:
-			return x509.SHA512WithRSA
+			sigAlg = x509.SHA512WithRSA
 		case keySize >= 3072:
-			return x509.SHA384WithRSA
+			sigAlg = x509.SHA384WithRSA
 		case keySize >= 2048:
-			return x509.SHA256WithRSA
+			sigAlg = x509.SHA256WithRSA
 		default:
-			return x509.SHA1WithRSA
+			sigAlg = x509.SHA1WithRSA
 		}
 	case *ecdsa.PublicKey:
 		switch pub.Curve {
 		case elliptic.P256():
-			return x509.ECDSAWithSHA256
+			sigAlg = x509.ECDSAWithSHA256
 		case elliptic.P384():
-			return x509.ECDSAWithSHA384
+			sigAlg = x509.ECDSAWithSHA384
 		case elliptic.P521():
-			return x509.ECDSAWithSHA512
+			sigAlg = x509.ECDSAWithSHA512
 		default:
-			return x509.ECDSAWithSHA1
+			sigAlg = x509.ECDSAWithSHA1
+		}
+	case *ecdsa_ext.PublicKey:
+		switch pub.Curve {
+		case elliptic.P256():
+			sigAlg = x509.ECDSAEXTWithSHA256
+		case elliptic.P384():
+			sigAlg = x509.ECDSAEXTWithSHA384
+		case elliptic.P521():
+			sigAlg = x509.ECDSAEXTWithSHA512
+		default:
+			sigAlg = x509.UnknownSignatureAlgorithm
 		}
 	default:
-		return x509.UnknownSignatureAlgorithm
+		sigAlg = x509.UnknownSignatureAlgorithm
 	}
+	zclog.Debugf("根据私钥内部公钥类型(%T)获取签名算法: %s", pub, sigAlg.String())
+	return sigAlg
 }
 
 // ParseCertificateRequest takes an incoming certificate request and
@@ -198,6 +214,7 @@ func ParseCertificateRequest(s Signer, csrBytes []byte) (template *x509.Certific
 		EmailAddresses:     csrv.EmailAddresses,
 		URIs:               csrv.URIs,
 	}
+	zclog.Debugf("template.SignatureAlgorithm: %s", template.SignatureAlgorithm.String())
 
 	for _, val := range csrv.Extensions {
 		// Check the CSR for the X.509 BasicConstraints (RFC 5280, 4.2.1.9)

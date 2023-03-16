@@ -12,6 +12,8 @@ import (
 	"encoding/pem"
 	"errors"
 	"fmt"
+	"gitee.com/zhaochuninhefei/gmgo/ecdsa_ext"
+	"gitee.com/zhaochuninhefei/zcgolog/zclog"
 	"io"
 	"math/big"
 	"net"
@@ -164,6 +166,8 @@ func (s *Signer) lint(template x509.Certificate, errLevel lints.LintStatus, igno
 		template.SignatureAlgorithm = x509.SM2WithSM3
 	case *ecdsa.PrivateKey:
 		template.SignatureAlgorithm = x509.ECDSAWithSHA256
+	case *ecdsa_ext.PrivateKey:
+		template.SignatureAlgorithm = x509.ECDSAEXTWithSHA256
 	default:
 		return cferr.New(cferr.PrivateKeyError, cferr.KeyMismatch)
 	}
@@ -212,6 +216,7 @@ func (s *Signer) sign(template *x509.Certificate, lintErrLevel lints.LintStatus,
 		return nil, err
 	}
 
+	zclog.Debugf("template.SignatureAlgorithm before x509.CreateCertificate: %s", template.SignatureAlgorithm)
 	derBytes, err := x509.CreateCertificate(rand.Reader, template, s.ca, template.PublicKey, s.priv)
 	if err != nil {
 		return nil, cferr.Wrap(cferr.CertificateError, cferr.Unknown, err)
@@ -309,6 +314,7 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 	if err != nil {
 		return nil, err
 	}
+	zclog.Debugf("csrTemplate.SignatureAlgorithm: %s", csrTemplate.SignatureAlgorithm)
 
 	// Copy out only the fields from the CSR authorized by policy.
 	safeTemplate := x509.Certificate{}
@@ -342,6 +348,7 @@ func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
 			safeTemplate.URIs = csrTemplate.URIs
 		}
 	}
+	zclog.Debugf("safeTemplate.SignatureAlgorithm: %s", safeTemplate.SignatureAlgorithm)
 
 	if req.CRLOverride != "" {
 		safeTemplate.CRLDistributionPoints = []string{req.CRLOverride}
