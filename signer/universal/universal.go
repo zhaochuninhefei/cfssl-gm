@@ -3,6 +3,7 @@ package universal
 
 import (
 	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
+	"gitee.com/zhaochuninhefei/zcgolog/zclog"
 
 	"gitee.com/zhaochuninhefei/gmgo/x509"
 
@@ -158,6 +159,7 @@ func (s *Signer) getMatchingProfile(profile string) (*config.SigningProfile, err
 // Sign sends a signature request to either the remote or local signer,
 // receiving a signed certificate or an error in response.
 func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
+	zclog.Debugln("universal.Sign")
 	profile, err := s.getMatchingProfile(req.Profile)
 	if err != nil {
 		return cert, err

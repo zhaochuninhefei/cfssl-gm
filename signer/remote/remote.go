@@ -3,6 +3,7 @@ package remote
 import (
 	"encoding/json"
 	"errors"
+	"gitee.com/zhaochuninhefei/zcgolog/zclog"
 
 	http "gitee.com/zhaochuninhefei/gmgo/gmhttp"
 
@@ -44,6 +45,7 @@ func NewSigner(policy *config.Signing) (*Signer, error) {
 // csr, and profileName are used as with a local signing operation, and
 // the label is used to select a signing root in a multi-root CA.
 func (s *Signer) Sign(req signer.SignRequest) (cert []byte, err error) {
+	zclog.Debugln("remote.Sign")
 	resp, err := s.remoteOp(req, req.Profile, "sign")
 	if err != nil {
 		return
