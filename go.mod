@@ -3,8 +3,8 @@ module gitee.com/zhaochuninhefei/cfssl-gm
 go 1.17
 
 require (
-	gitee.com/zhaochuninhefei/gmgo v0.0.26
-	gitee.com/zhaochuninhefei/zcgolog v0.0.19
+	gitee.com/zhaochuninhefei/gmgo v0.0.30
+	gitee.com/zhaochuninhefei/zcgolog v0.0.22
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/cloudflare/backoff v0.0.0-20161212185259-647f3cdfc87a
 	github.com/cloudflare/go-metrics v0.0.0-20151117154305-6a9aea36fb41
