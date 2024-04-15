@@ -1,10 +1,10 @@
 module gitee.com/zhaochuninhefei/cfssl-gm
 
-go 1.17
+go 1.22
 
 require (
-	gitee.com/zhaochuninhefei/gmgo v0.0.30
-	gitee.com/zhaochuninhefei/zcgolog v0.0.22
+	gitee.com/zhaochuninhefei/gmgo v0.1.0
+	gitee.com/zhaochuninhefei/zcgolog v0.0.23
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/cloudflare/backoff v0.0.0-20161212185259-647f3cdfc87a
 	github.com/cloudflare/go-metrics v0.0.0-20151117154305-6a9aea36fb41
@@ -16,9 +16,9 @@ require (
 	github.com/kisom/goutils v1.4.3
 	github.com/lib/pq v1.10.7
 	github.com/mattn/go-sqlite3 v1.14.15
-	github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
-	github.com/zmap/zlint v0.0.0-00010101000000-000000000000
-	golang.org/x/crypto v0.1.0
+	github.com/zmap/zcrypto v0.0.0-20231219022726-a1f61fb1661c
+	github.com/zmap/zlint v1.1.0
+	golang.org/x/crypto v0.22.0
 )
 
 require (
@@ -26,19 +26,18 @@ require (
 	github.com/getsentry/sentry-go v0.11.0 // indirect
 	github.com/go-logr/logr v1.2.0 // indirect
 	github.com/kr/text v0.2.0 // indirect
-	github.com/stretchr/testify v1.7.1 // indirect
-	github.com/weppos/publicsuffix-go v0.4.0 // indirect
-	golang.org/x/net v0.1.0 // indirect
-	golang.org/x/sys v0.1.0 // indirect
-	golang.org/x/text v0.4.0 // indirect
-	google.golang.org/protobuf v1.28.1 // indirect
+	github.com/weppos/publicsuffix-go v0.30.2-0.20230730094716-a20f9abcc222 // indirect
+	golang.org/x/net v0.24.0 // indirect
+	golang.org/x/sys v0.19.0 // indirect
+	golang.org/x/text v0.14.0 // indirect
+	google.golang.org/protobuf v1.33.0 // indirect
 	k8s.io/klog/v2 v2.80.1 // indirect
 )
 
-replace (
-	//gitee.com/zhaochuninhefei/gmgo => ../gmgo
-	//gitee.com/zhaochuninhefei/zcgolog => ../zcgolog
-	// zlint与zcrypto版本必须匹配，否则zlint编译出错
-	github.com/zmap/zcrypto => github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
-	github.com/zmap/zlint => github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb
-)
+//replace (
+//	//gitee.com/zhaochuninhefei/gmgo => ../gmgo
+//	//gitee.com/zhaochuninhefei/zcgolog => ../zcgolog
+//	// zlint与zcrypto版本必须匹配，否则zlint编译出错
+//	github.com/zmap/zcrypto => github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
+//	github.com/zmap/zlint => github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb
+//)
