@@ -3,7 +3,7 @@ module gitee.com/zhaochuninhefei/cfssl-gm
 go 1.22
 
 require (
-	gitee.com/zhaochuninhefei/gmgo v0.1.0
+	gitee.com/zhaochuninhefei/gmgo v0.1.1
 	gitee.com/zhaochuninhefei/zcgolog v0.0.23
 	github.com/GeertJohan/go.rice v1.0.2
 	github.com/cloudflare/backoff v0.0.0-20161212185259-647f3cdfc87a
@@ -34,10 +34,10 @@ require (
 	k8s.io/klog/v2 v2.80.1 // indirect
 )
 
-//replace (
-//	//gitee.com/zhaochuninhefei/gmgo => ../gmgo
-//	//gitee.com/zhaochuninhefei/zcgolog => ../zcgolog
-//	// zlint与zcrypto版本必须匹配，否则zlint编译出错
-//	github.com/zmap/zcrypto => github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
-//	github.com/zmap/zlint => github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb
-//)
+replace (
+	//gitee.com/zhaochuninhefei/gmgo => ../gmgo
+	//gitee.com/zhaochuninhefei/zcgolog => ../zcgolog
+	// zlint与zcrypto版本必须匹配，否则zlint编译出错
+	github.com/zmap/zcrypto => github.com/zmap/zcrypto v0.0.0-20190729165852-9051775e6a2e
+	github.com/zmap/zlint => github.com/zmap/zlint v0.0.0-20190806154020-fd021b4cfbeb
+)
