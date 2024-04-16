@@ -3,6 +3,7 @@ module gitee.com/zhaochuninhefei/cfssl-gm
 go 1.22
 
 require (
+	git.wntrmute.dev/kyle/goutils v1.7.4
 	gitee.com/zhaochuninhefei/gmgo v0.1.1
 	gitee.com/zhaochuninhefei/zcgolog v0.0.23
 	github.com/GeertJohan/go.rice v1.0.3
@@ -13,7 +14,6 @@ require (
 	github.com/jmhodges/clock v1.2.0
 	github.com/jmoiron/sqlx v1.3.5
 	github.com/kisielk/sqlstruct v0.0.0-20210630145711-dae28ed37023
-	github.com/kisom/goutils v1.4.3
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/zmap/zcrypto v0.0.0-20231219022726-a1f61fb1661c

@@ -10,13 +10,13 @@ import (
 
 	"gitee.com/zhaochuninhefei/gmgo/x509"
 
+	"git.wntrmute.dev/kyle/goutils/assert"
 	"gitee.com/zhaochuninhefei/cfssl-gm/config"
 	"gitee.com/zhaochuninhefei/cfssl-gm/csr"
 	"gitee.com/zhaochuninhefei/cfssl-gm/helpers"
 	"gitee.com/zhaochuninhefei/cfssl-gm/initca"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer"
 	"gitee.com/zhaochuninhefei/cfssl-gm/signer/local"
-	"github.com/kisom/goutils/assert"
 )
 
 // CA is a local transport CertificateAuthority that is useful for

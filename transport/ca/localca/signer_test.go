@@ -6,12 +6,12 @@ import (
 	"os"
 	"testing"
 
+	"git.wntrmute.dev/kyle/goutils/assert"
 	"gitee.com/zhaochuninhefei/cfssl-gm/config"
 	"gitee.com/zhaochuninhefei/cfssl-gm/csr"
 	"gitee.com/zhaochuninhefei/cfssl-gm/helpers"
 	"gitee.com/zhaochuninhefei/cfssl-gm/initca"
 	"gitee.com/zhaochuninhefei/cfssl-gm/selfsign"
-	"github.com/kisom/goutils/assert"
 )
 
 func tempName() (string, error) {
